@@ -1,13 +1,13 @@
 "use client"
 
-import { Bell } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { Bell, LogOut,  } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { useChat } from "@/components/chat-provider"
-import { useState } from "react"
+import { useState, useTransition } from "react"
+import { logout } from "../../actions/auth"
+import SearchQuery from "./features/SearchQuery"
 
 const mockNotifications = [
   {
@@ -31,9 +31,8 @@ const mockNotifications = [
 ]
 
 export function Header() {
-  const { searchQuery, setSearchQuery } = useChat()
   const [notifications, setNotifications] = useState(mockNotifications)
-
+  const [isPending, startTransition] = useTransition()
   const unreadCount = notifications.filter((n) => !n.read).length
 
   const markAsRead = (id: number) => {
@@ -42,14 +41,18 @@ export function Header() {
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center px-4 gap-4">
+      <div className="flex h-16 items-center px-4">
+        {/* Left: Sidebar */}
         <SidebarTrigger />
 
-        <div className="flex-1 max-w-md">
-          <Input placeholder="Search friends..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        {/* Middle: Search */}
+        <div className="flex-1 max-w-md mx-4 relative">
+          <SearchQuery/>
         </div>
 
-        <div className="flex items-center space-x-2">
+        {/* Right side */}
+        <div className="flex items-center gap-6 ml-auto">
+          {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
@@ -88,6 +91,23 @@ export function Header() {
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Logout (far right) */}
+          <Button
+            onClick={() =>
+              startTransition(async () => {
+                try {
+                  await logout()
+                } finally {
+                  localStorage.removeItem("AccessToken")
+                }
+              })
+            }
+            disabled={isPending}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            {isPending ? "Logging out..." : "Logout"}
+          </Button>
         </div>
       </div>
     </header>
