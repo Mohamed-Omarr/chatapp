@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { ChatProvider } from "@/components/chat-provider";
 import AppContent from "@/components/AppContent";
 import { UserProvider } from "@/hooks/UserContext";
 import { getUserInfo } from "../../../actions/getUserInfo";
@@ -27,13 +26,11 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ChatProvider>
           <SidebarProvider defaultOpen={true}>
             <UserProvider serverProfile={userData}>
               <AppContent>{children}</AppContent>
             </UserProvider>
           </SidebarProvider>
-        </ChatProvider>
       </body>
     </html>
   );

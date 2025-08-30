@@ -2,7 +2,7 @@
 import { supabaseServer } from "@/lib/supabaseHooks/supabaseServer";
 import { getUserInfo } from "../../getUserInfo";
 
-export async function getFriendRequests() {
+export async function getSentFriendRequests() {
   try {
     const supabase = await supabaseServer();
     const user = await getUserInfo();
@@ -15,7 +15,7 @@ export async function getFriendRequests() {
         `
         id,
         status,
-        from_user:profiles!friend_requests_from_user_fkey (
+        to_user:profiles!friend_requests_to_user_fkey (
           id,
           username,
           email,
@@ -23,14 +23,13 @@ export async function getFriendRequests() {
         )
       `
       )
-      .eq("to_user", user.id)
+      .eq("from_user", user.id)
 
     if (error) throw error;
 
     return data;
-    
   } catch (error) {
-    console.error("Failed to get the friend requests", error);
+    console.error("Failed to get sent friend requests", error);
     return [];
   }
 }

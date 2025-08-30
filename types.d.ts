@@ -1,10 +1,8 @@
-type friend_request = {
-    id: string;
-    status: boolean;
-    from_user: {
-        id: string;
-        username: string;
-        email: string;
-        avatar_url: string | null;
-    }[];
+type FriendRequest = {
+  id: string
+  status: string
+  userId: string
+  email: string
+  username: string
+  avatar_url?: string | null
 }

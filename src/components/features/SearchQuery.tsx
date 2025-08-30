@@ -29,32 +29,47 @@ const searchNonFriends = async (
   const { query, limit = 4 } = params
 
   try {
+    // 1. find friend requests involving current user
+    const { data: requests, error: reqError } = await supabase
+      .from("friend_requests")
+      .select("from_user, to_user")
+      .or(`from_user.eq."${currentUserId}",to_user.eq."${currentUserId}"`)
+
+
+    if (reqError) throw reqError
+
+    // 2. collect excluded ids
+    const excludedIds = new Set<string>()
+    requests?.forEach((r) => {
+      if (r.from_user !== currentUserId) excludedIds.add(r.from_user)
+      if (r.to_user !== currentUserId) excludedIds.add(r.to_user)
+    })
+
+    // 3. search profiles
     let supabaseQuery = supabase
       .from("profiles")
-      .select("id, username, email")
-      .eq("username", query)
+      .select("id, username")
+      .ilike("username", `%${query}%`)
       .limit(limit)
+      .neq("id", currentUserId)
 
-    if (currentUserId) {
-      supabaseQuery = supabaseQuery.neq("id", currentUserId)
+    if (excludedIds.size > 0) {
+      supabaseQuery = supabaseQuery.not("id", "in", [...excludedIds])
     }
 
     const { data: users, error } = await supabaseQuery
-
-    if (error) {
-      console.error("Search error:", error)
-      return []
-    }
+    if (error) throw error
 
     return (users || []).map((user) => ({
       id: user.id,
-      username: user.username || user.email || "Unknown User",
+      username: user.username,
     }))
   } catch (error) {
-    console.error("Search function error:", error)
+    console.error("Search error:", error)
     return []
   }
 }
+
 
 function SearchQuery() {
   const [searchQuery, setSearchQuery] = useState("")
