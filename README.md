@@ -24,7 +24,7 @@ Features:
 
 Database & Backend:
 
--Entities: users, friends, notifications, friendship
+-Entities: users, friends, notifications, friendship , messages
 
 -Supabase for auth, storage, and real-time updates
 
