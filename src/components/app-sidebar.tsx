@@ -1,6 +1,3 @@
-"use client"
-
-import { MessageCircle, User, UserPlus, Clock } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -11,13 +8,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
-} from "@/components/ui/sidebar"
-import Link from "next/link"
-import ShowFriendList from "./features/ShowFriendList"
-import { useUser } from "@/hooks/UserContext"
+} from "@/components/ui/sidebar";
+import Link from "next/link";
+import { MessageCircle, User, UserPlus, Clock } from "lucide-react";
+import ShowFriendList from "./features/friend/ShowFriendList";
 
 const navigation = [
-  
   {
     title: "Friend Requests",
     url: "/home/requests",
@@ -33,12 +29,9 @@ const navigation = [
     url: "/home/profile",
     icon: User,
   },
+];
 
-]
-
-export function AppSidebar() {
-const userId = useUser();
-if (!userId.user) throw new Error("user not authed")
+export default async function AppSidebar() {
   return (
     <Sidebar className="border-r">
       <SidebarHeader className="p-4">
@@ -67,11 +60,9 @@ if (!userId.user) throw new Error("user not authed")
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <ShowFriendList
-        currentUserId={userId.user?.id}
-        />
-
+        {/* ✅ ShowFriendList is already hybrid (SSR fetch + client UI) */}
+        <ShowFriendList />
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }

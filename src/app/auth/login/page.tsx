@@ -1,36 +1,48 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "react-toastify";
+import { Loader2 } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import Link from "next/link";
+
+import { supabaseClient } from "@/lib/supabaseHooks/supabaseClient";
+import { LoginFormSchema } from "@/lib/validation/auth";
+import z from "zod";
 import { login } from "../../../../actions/auth";
-import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+
+type LoginFormData = z.infer<typeof LoginFormSchema>;
 
 export default function LoginPage() {
-  const [state, action, isPending] = useActionState(login, undefined);
 
-  const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(LoginFormSchema),
+  });
 
-  useEffect(() => {
-    if (!state) return;
+ const onSubmit = async (formData: LoginFormData) => {
+    try {
+      // 1) Login via server
+      const session = await login(formData);
 
-    const { message, errors, accessToken } = state;
-
-    if (errors) {
-      toast.error(message || "Login failed.", { autoClose: 1500 });
-      return;
+      // 2) Hydrate client supabase
+      if (session?.session) {
+        await supabaseClient.auth.setSession(session.session);
+      }
+      toast.success("Logged in successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Login failed");
     }
-
-    if (message && accessToken) {
-      localStorage.setItem("AccessToken", accessToken);
-      toast.success(message, { autoClose: 1500 , onClose: () =>router.push("/home")});
-    }
-  }, [state,router]);
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-950 p-4">
@@ -42,50 +54,48 @@ export default function LoginPage() {
           <p className="text-muted-foreground">Login to chat app</p>
         </CardHeader>
         <CardContent>
-          <form action={action} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Email */}
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                name="email"
                 type="email"
                 placeholder="m@example.com"
-                required
+                {...register("email")}
               />
-              {state?.errors?.email && (
+              {errors.email && (
                 <p className="text-sm text-destructive mt-1">
-                  {state.errors.email[0]}
+                  {errors.email.message}
                 </p>
               )}
             </div>
+
+            {/* Password */}
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
-              {state?.errors?.password && (
-                <div className="text-sm text-destructive mt-1">
-                  <p>Password must:</p>
-                  <ul className="list-disc list-inside">
-                    {state.errors.password.map((error) => (
-                      <li key={error}>{error}</li>
-                    ))}
-                  </ul>
-                </div>
+              <Input id="password" type="password" {...register("password")} />
+              {errors.password && (
+                <p className="text-sm text-destructive mt-1">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? (
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Logging...
+                  Logging in...
                 </>
               ) : (
                 "Login"
               )}
             </Button>
           </form>
+
           <div className="mt-4 text-center text-sm">
-            Do not have an account?{" "}
+            Don’t have an account?{" "}
             <Link href="/auth/register" className="underline">
               Register
             </Link>

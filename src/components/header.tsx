@@ -1,13 +1,18 @@
-"use client"
+"use client";
 
-import { Bell, LogOut,  } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { useState, useTransition } from "react"
-import { logout } from "../../actions/auth"
-import SearchQuery from "./features/SearchQuery"
+import { Bell, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useState, useTransition } from "react";
+import { logout } from "../../actions/auth";
+import SearchQuery from "./features/search/SearchQuery";
 
 const mockNotifications = [
   {
@@ -28,16 +33,18 @@ const mockNotifications = [
     time: "3 hours ago",
     read: true,
   },
-]
+];
 
 export function Header() {
-  const [notifications, setNotifications] = useState(mockNotifications)
-  const [isPending, startTransition] = useTransition()
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const [notifications, setNotifications] = useState(mockNotifications);
+  const [isPending, startTransition] = useTransition();
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: number) => {
-    setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true } : n)))
-  }
+    setNotifications(
+      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -47,7 +54,7 @@ export function Header() {
 
         {/* Middle: Search */}
         <div className="flex-1 max-w-md mx-4 relative">
-          <SearchQuery/>
+          <SearchQuery />
         </div>
 
         {/* Right side */}
@@ -71,18 +78,24 @@ export function Header() {
               <div className="p-2">
                 <h3 className="font-semibold mb-2">Notifications</h3>
                 {notifications.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No notifications</p>
+                  <p className="text-sm text-muted-foreground">
+                    No notifications
+                  </p>
                 ) : (
                   <div className="space-y-1">
                     {notifications.map((notification) => (
                       <DropdownMenuItem
                         key={notification.id}
-                        className={`p-3 cursor-pointer ${!notification.read ? "bg-muted/50" : ""}`}
+                        className={`p-3 cursor-pointer ${
+                          !notification.read ? "bg-muted/50" : ""
+                        }`}
                         onClick={() => markAsRead(notification.id)}
                       >
                         <div className="flex flex-col space-y-1">
                           <p className="text-sm">{notification.message}</p>
-                          <p className="text-xs text-muted-foreground">{notification.time}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {notification.time}
+                          </p>
                         </div>
                       </DropdownMenuItem>
                     ))}
@@ -97,9 +110,9 @@ export function Header() {
             onClick={() =>
               startTransition(async () => {
                 try {
-                  await logout()
+                  await logout();
                 } finally {
-                  localStorage.removeItem("AccessToken")
+                  localStorage.removeItem("AccessToken");
                 }
               })
             }
@@ -111,5 +124,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

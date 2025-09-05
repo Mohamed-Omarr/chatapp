@@ -1,3 +1,4 @@
+'use client'
 import { cn } from '@/lib/utils'
 import type { ChatMessage } from '@/hooks/use-realtime-chat'
 
@@ -13,17 +14,19 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
       <div
         className={cn('max-w-[75%] w-fit flex flex-col gap-1', {
           'items-end': isOwnMessage,
+          'items-start': !isOwnMessage,
         })}
       >
         {showHeader && (
           <div
             className={cn('flex items-center gap-2 text-xs px-3', {
               'justify-end flex-row-reverse': isOwnMessage,
+              'justify-start': !isOwnMessage,
             })}
           >
-            <span className={'font-medium'}>{message.sender?.username}</span>
+            <span className="font-medium">{message.sender_id.username}</span>
             <span className="text-foreground/50 text-xs">
-              {new Date(message.createdAt).toLocaleTimeString('en-US', {
+              {new Date(message.created_at).toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: true,
@@ -34,7 +37,7 @@ export const ChatMessageItem = ({ message, isOwnMessage, showHeader }: ChatMessa
         <div
           className={cn(
             'py-2 px-3 rounded-xl text-sm w-fit',
-            isOwnMessage ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
+            isOwnMessage ? 'bg-primary text-primary-foreground text-right' : 'bg-muted text-foreground text-left'
           )}
         >
           {message.content}

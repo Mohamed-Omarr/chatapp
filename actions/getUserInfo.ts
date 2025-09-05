@@ -1,3 +1,4 @@
+'use server'
 import { supabaseServer } from "@/lib/supabaseHooks/supabaseServer";
 
 export async function  getUserInfo() {

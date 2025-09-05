@@ -3,7 +3,6 @@
 import { supabaseServer } from "@/lib/supabaseHooks/supabaseServer"
 import { getUserInfo } from "../../getUserInfo"
 
-
 export async function acceptFriendRequest(from_user: string, requestId: string) {
   try {
     const user = await getUserInfo()

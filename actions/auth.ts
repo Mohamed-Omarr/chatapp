@@ -1,6 +1,7 @@
 'use server'
 import { supabaseServer } from "@/lib/supabaseHooks/supabaseServer"
 import { LoginFormSchema, RegisterFormSchema } from "@/lib/validation/auth"
+import type { Session } from "@supabase/supabase-js"
 
 type RegisterFormState =
   | {
@@ -13,6 +14,7 @@ type RegisterFormState =
         supabaseProfileError?: string[]
       }
       message?: string
+      session?: Session  | null
     }
   | undefined
 
@@ -24,23 +26,17 @@ type LoginFormState =
         supabaseAuthError?: string[]
       }
       message?: string
-      accessToken?: string
+      session?: Session
     }
   | undefined
 
 
 // ---------------------- REGISTER ----------------------
-export async function register(
-  state: RegisterFormState,
-  formData: FormData
+export async function registerAction(
+  dataOfRegister: register
 ): Promise<RegisterFormState> {
   
-  const validatedFields = RegisterFormSchema.safeParse({
-    name: String(formData.get("name")).trim(),
-    email: String(formData.get("email")).trim().toLowerCase(),
-    password: String(formData.get("password")).trim(),
-    confirmPassword: String(formData.get("confirmPassword")).trim(),
-  });
+  const validatedFields = RegisterFormSchema.safeParse(dataOfRegister);
 
   if (!validatedFields.success) {
     return {
@@ -75,21 +71,16 @@ export async function register(
     }
   }
 
-
-  return { message: "Successful sign up!" };
+  return { message: "Successful sign up!" , session: data.session};
 }
 
 
 // ---------------------- LOGIN ----------------------
 export async function login(
-  state: LoginFormState,
-  formData: FormData
+  dataOfLogin: login
 ): Promise<LoginFormState> {
 
-  const validatedFields = LoginFormSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  })
+  const validatedFields = LoginFormSchema.safeParse(dataOfLogin)
 
   if (!validatedFields.success) {
     return {
@@ -112,10 +103,7 @@ export async function login(
     }
   }
 
-  return {
-    message: "Welcome back!",
-    accessToken: data.session?.access_token,
-  }
+  return { session: data.session,message: "Welcome back!"  }
 }
 
 // ---------------------- LOGOUT ----------------------

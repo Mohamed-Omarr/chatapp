@@ -1,40 +1,46 @@
 "use client";
-
-import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "react-toastify";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import Link from "next/link";
-import { register } from "../../../../actions/auth";
-import { toast } from "react-toastify";
-import { useRouter } from "next/navigation";
+import { RegisterFormSchema } from "@/lib/validation/auth";
+import { supabaseClient } from "@/lib/supabaseHooks/supabaseClient";
+import { registerAction } from "../../../../actions/auth";
+
+type RegisterFormData = z.infer<typeof RegisterFormSchema>;
 
 export default function RegisterPage() {
-  const [state, action, isPending ] = useActionState(register, undefined);
-  
   const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(RegisterFormSchema),
+  });
 
-  useEffect(() => {
-    if (!state) return;
 
-    const { message, errors } = state;
+  const onSubmit = async (formData: RegisterFormData) => {
+    try {
+      // 1) Register via server
+      const session = await registerAction(formData);
 
-    if (errors) {
-      toast.error(message || "Something went wrong.", {
-        autoClose: 1000,
-      });
-      return;
+      // 2) Hydrate client (optional but needed for realtime right after register)
+      if (session?.session) {
+        await supabaseClient.auth.setSession(session.session);
+      }
+      toast.success("Registered successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Registration failed");
     }
-
-    if (message) {
-      toast.success(message, {
-        autoClose: 1000,
-        onClose: () => router.push("/auth/login"),
-      });
-    }
-  }, [state, router]);
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-950 p-4">
@@ -46,72 +52,62 @@ export default function RegisterPage() {
           </p>
         </CardHeader>
         <CardContent>
-          <form action={action} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Name */}
             <div>
               <Label htmlFor="name">Name</Label>
-              <Input id="name" name="name" placeholder="John Doe" required />
-              {state?.errors?.name && (
+              <Input id="name" {...register("name")} placeholder="John Doe" />
+              {errors.name && (
                 <p className="text-sm text-destructive mt-1">
-                  {state.errors.name[0]}
+                  {errors.name.message}
                 </p>
               )}
             </div>
+
+            {/* Email */}
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                name="email"
                 type="email"
+                {...register("email")}
                 placeholder="m@example.com"
-                required
               />
-              {state?.errors?.email && (
+              {errors.email && (
                 <p className="text-sm text-destructive mt-1">
-                  {state.errors.email[0]}
+                  {errors.email.message}
                 </p>
               )}
             </div>
+
+            {/* Password */}
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
-              {state?.errors?.password && (
-                <div className="text-sm text-destructive mt-1">
-                  <p>Password must:</p>
-                  <ul className="list-disc list-inside">
-                    {state.errors.password.map((error) => (
-                      <li key={error}>{error}</li>
-                    ))}
-                  </ul>
-                </div>
+              <Input id="password" type="password" {...register("password")} />
+              {errors.password && (
+                <p className="text-sm text-destructive mt-1">
+                  {errors.password.message}
+                </p>
               )}
             </div>
+
+            {/* Confirm Password */}
             <div>
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <Input
                 id="confirmPassword"
-                name="confirmPassword"
                 type="password"
-                required
+                {...register("confirmPassword")}
               />
-              {state?.errors?.confirmPassword && (
+              {errors.confirmPassword && (
                 <p className="text-sm text-destructive mt-1">
-                  {state.errors.confirmPassword[0]}
+                  {errors.confirmPassword.message}
                 </p>
               )}
             </div>
 
-            {state?.message && (
-              <p
-                className={`text-sm ${
-                  state.errors ? "text-destructive" : "text-green-600"
-                }`}
-              >
-                {state.message}
-              </p>
-            )}
-
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? (
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Registering...
@@ -121,6 +117,7 @@ export default function RegisterPage() {
               )}
             </Button>
           </form>
+
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
             <Link href="/auth/login" className="underline">

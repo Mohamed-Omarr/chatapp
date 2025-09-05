@@ -1,33 +1,35 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 
-type UserProfile = {
+export type UserProfile = {
   id: string;
   username: string;
   email: string;
-  avatar_url?: string | null;
+  avatar?: string | null;
 };
 
 type UserContextType = {
   user: UserProfile | null;
+  setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
 };
 
 const UserContext = createContext<UserContextType>({
   user: null,
+  setUser: () => {},
 });
 
 export function UserProvider({
   children,
   serverProfile,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   serverProfile: UserProfile | null;
 }) {
-  const [user] = useState<UserProfile | null>(serverProfile);
+  const [user, setUser] = useState<UserProfile | null>(serverProfile);
 
   return (
-    <UserContext.Provider value={{ user }}>
+    <UserContext.Provider value={{ user, setUser }}>
       {children}
     </UserContext.Provider>
   );

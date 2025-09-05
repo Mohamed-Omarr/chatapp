@@ -1,10 +1,8 @@
-"use client";
 import React from "react";
-import { AppSidebar } from "@/components/app-sidebar";
 import { Header } from "@/components/header";
+import AppSidebar from "./app-sidebar";
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  // This component will wrap the main content and handle the chat dialog
   return (
     <div className="flex h-screen w-full">
       <AppSidebar />

@@ -1,13 +1,13 @@
 "use client"
 
 import { useEffect, useState, useMemo, useCallback } from "react"
-import { Input } from "../ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
-import { Button } from "../ui/button"
 import { UserPlus } from "lucide-react"
 import { useUser } from "@/hooks/UserContext"
 import { supabaseClient } from "@/lib/supabaseHooks/supabaseClient"
-import { sendFriendRequest } from "../../../actions/features/friendRequest/sendFriendRequest"
+import { sendFriendRequest } from "../../../../actions/features/friendRequest/sendFriendRequest"
+import { Input } from "@/components/ui/input"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 
 interface SearchParams {
   query: string

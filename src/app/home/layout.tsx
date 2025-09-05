@@ -6,6 +6,8 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import AppContent from "@/components/AppContent";
 import { UserProvider } from "@/hooks/UserContext";
 import { getUserInfo } from "../../../actions/getUserInfo";
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,7 +30,9 @@ export default async function RootLayout({
       <body className={inter.className}>
           <SidebarProvider defaultOpen={true}>
             <UserProvider serverProfile={userData}>
+              <Suspense fallback={<Loader2/>}>
               <AppContent>{children}</AppContent>
+              </Suspense>
             </UserProvider>
           </SidebarProvider>
       </body>
