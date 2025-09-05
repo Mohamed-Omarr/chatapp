@@ -71,7 +71,4 @@ Lessons Learned / Challenges:
 
 -SSR vs CSR tradeoffs
 
--Plan data flow before moving components
-
-
-Plan data flow before moving components
+-Plan data flow before moving component
